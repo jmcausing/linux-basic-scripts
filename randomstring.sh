@@ -27,5 +27,16 @@ do
 done
 
 current_file_size=$(ls -al  | grep ranfile.txt | awk '{print $5}');
+echo ""
 echo "It's done! Now the file size is: $current_file_size";
+echo "Total lines for the file ranfile.txt is: $(cat ranfile.txt | wc -l)"
 
+
+# get total number of lines that has 'a' and 'A' characters
+total_lines_a_A=$(egrep -i '^a|A' ranfile.txt  | wc -l);
+
+# Remove lines with 'a' and 'A' characters
+echo "This will delete all the lines that contains 'a' and 'A' characters.";
+sed -i '/\(a\|A\)/d' ranfile.txt 
+
+echo "Now total numebr of lines after removal is: $(cat ranfile.txt | wc -l)";
