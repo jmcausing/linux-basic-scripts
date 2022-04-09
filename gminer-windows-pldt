@@ -1,0 +1,49 @@
+#!/bin/bash
+# Author: John Mark Causing
+# Date: Nov 11, 2021
+# Description: 
+# Get GPU hashrate for gminer API
+# Bash script for windows with CRON that appends data to a file name. This will appear in the windows tool bar
+
+# Scan if gminer API IP addrrsss range 192.168.1.1 to 192.168.1.15
+gminer_ip=""
+for i in {1..15}
+  do
+    if $(curl -s "192.168.1.$i:8887/stat" > /dev/null); then
+      gminer_ip="192.168.1.$i"
+      break
+    fi
+done
+
+export PATH="/usr/local/bin:$PATH"
+
+path="/mnt/c/API/"
+pathfile="/mnt/c/API/temp.lnk"
+if ls /mnt/c/API/GPU* 1> /dev/null 2>&1; then
+    rm $path/GPU*
+fi
+
+export PATH="/usr/local/bin:$PATH"
+JQ=$(command -v jq)
+json=$(curl -s http://$gminer_ip:8887/stat) #get api url gmianer
+total_gpu=$(jq -r '.devices[] | .name ' <<< $json | wc -l) #total number of GPUs
+
+#loop/get all gpu data, speed/etc
+x=0
+total_kh=0
+
+while [ $x -ne $total_gpu ]
+do
+  loop_mh=$($JQ -r ".devices[$x] | .speed " <<< $json)
+  # Sum total mh in this loop
+  total_kh=`expr $total_kh + $loop_mh`
+  x=$(( $x + 1 ))
+done
+
+#convert kH to Mh
+kh=1000
+total_mh=`expr $total_kh / $kh`
+
+newfilename="GPU: $total_mh khS.lnk";
+
+touch "$path$newfilename"
